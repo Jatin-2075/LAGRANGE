@@ -1,0 +1,47 @@
+.banner {
+  padding: 11px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.banner--compact {
+  padding: 8px 10px;
+  font-size: 11px;
+}
+
+.banner__title {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.banner__body {
+  margin-top: 2px;
+}
+
+.banner__body ul {
+  margin: 4px 0 0;
+  padding-left: 16px;
+}
+
+.banner--warn {
+  border-color: rgba(246, 185, 77, 0.35);
+  background: var(--warn-dim);
+}
+
+.banner--warn .banner__title {
+  color: var(--warn);
+}
+
+.banner--error {
+  border-color: rgba(255, 122, 122, 0.4);
+  background: var(--danger-dim);
+}
+
+.banner--error .banner__title {
+  color: var(--danger);
+}

@@ -1,0 +1,103 @@
+.viz {
+  height: 100%;
+}
+
+.viz__chip {
+  padding: 3px 9px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warn);
+  border: 1px solid rgba(246, 185, 77, 0.4);
+  border-radius: 999px;
+}
+
+.viz__stage {
+  position: relative;
+  flex: 1;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.viz__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.viz__overlay {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.viz__overlay > * {
+  pointer-events: auto;
+}
+
+.viz__overlay--left {
+  left: 16px;
+  bottom: 16px;
+  width: min(300px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+}
+
+.viz__overlay--right {
+  right: 16px;
+  top: 16px;
+  bottom: 16px;
+  width: min(330px, calc(100% - 32px));
+}
+
+.viz__footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  padding: 11px 22px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.viz__footer-spacer {
+  flex: 1;
+}
+
+@media (max-width: 1000px) {
+  .viz {
+    height: auto;
+  }
+
+  .viz__stage {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 12px;
+    overflow: visible;
+  }
+
+  .viz__canvas {
+    position: relative;
+    inset: auto;
+    height: 58vh;
+    min-height: 340px;
+  }
+
+  .viz__overlay {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin: 0 12px;
+  }
+
+  .viz__overlay--left,
+  .viz__overlay--right {
+    width: auto;
+    max-height: none;
+  }
+}

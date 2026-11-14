@@ -1,0 +1,17 @@
+.moon-viewer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, #0a1428 0%, #050a16 60%, #030710 100%);
+  cursor: grab;
+}
+
+.moon-viewer:active {
+  cursor: grabbing;
+}
+
+.moon-viewer--fallback {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  cursor: default;
+}

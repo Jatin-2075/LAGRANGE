@@ -1,0 +1,61 @@
+.footprint-map {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+}
+
+.footprint-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.footprint-map__bg {
+  fill: #070d19;
+}
+
+.footprint-map__site {
+  cursor: pointer;
+  outline: none;
+}
+
+.footprint-map__site path {
+  fill: rgba(198, 242, 106, 0.1);
+  stroke: rgba(198, 242, 106, 0.55);
+  stroke-width: 1.2;
+  transition: fill 0.15s, stroke 0.15s;
+}
+
+.footprint-map__site text {
+  fill: var(--accent);
+  font: 600 8px var(--font-mono);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.footprint-map__site:hover path,
+.footprint-map__site:focus-visible path {
+  fill: rgba(198, 242, 106, 0.22);
+}
+
+.footprint-map__site--selected path {
+  fill: rgba(198, 242, 106, 0.42);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.footprint-map__site--selected text {
+  fill: var(--accent-ink);
+}
+
+.footprint-map__scale line {
+  stroke: var(--text-dim);
+  stroke-width: 1.5;
+}
+
+.footprint-map__scale text,
+.footprint-map__north {
+  fill: var(--text-faint);
+  font: 500 7.5px var(--font-mono);
+}

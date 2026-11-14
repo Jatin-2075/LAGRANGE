@@ -1,0 +1,53 @@
+.mission-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.mission-form__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  padding: 18px 18px 14px;
+  overflow-y: auto;
+}
+
+.mission-form__scroll > * {
+  flex: none;
+}
+
+.mission-form__title {
+  margin-top: 6px;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.mission-form__intro {
+  padding: 0 4px 4px;
+}
+
+.mission-form__profile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.mission-form__note {
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.mission-form__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}

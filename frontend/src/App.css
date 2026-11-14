@@ -1,0 +1,28 @@
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: var(--gutter);
+  height: 100dvh;
+  min-height: 640px;
+  padding: var(--gutter);
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(40, 70, 130, 0.12), transparent 60%),
+    var(--bg);
+}
+
+.app__sidebar {
+  height: 100%;
+}
+
+@media (max-width: 1000px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .app__sidebar {
+    height: auto;
+  }
+}
