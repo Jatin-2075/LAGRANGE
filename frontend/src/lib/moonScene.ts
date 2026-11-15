@@ -104,7 +104,7 @@ export class MoonScene {
 
     this.moon = new Mesh(
       new SphereGeometry(1, 96, 64),
-      new MeshStandardMaterial({ color: 0x59627a, roughness: 1, metalness: 0 }),
+      new MeshStandardMaterial({ color: 0xffffff, roughness: 0.96, metalness: 0 }),
     );
     this.scene.add(this.moon);
     this.scene.add(this.createGraticule());
@@ -238,7 +238,7 @@ export class MoonScene {
     material.color = new Color(0xffffff);
     material.map = texture;
     material.bumpMap = texture;
-    material.bumpScale = 0.9;
+    material.bumpScale = 1.5;
     material.needsUpdate = true;
     this.dirty = true;
   }
@@ -353,7 +353,9 @@ export class MoonScene {
       }),
     );
     const [x, y, z] = lunarToUnitVector(latitude, longitude);
-    sprite.position.set(x * 1.004, y * 1.004, z * 1.004);
+    const surfacePoint = new Vector3(x * 1.004, y * 1.004, z * 1.004);
+    this.moon.localToWorld(surfacePoint);
+    sprite.position.copy(surfacePoint);
     sprite.scale.set(scale, scale, 1);
     this.markers.add(sprite);
     return sprite;
@@ -445,7 +447,8 @@ export class MoonScene {
     this.raycaster.setFromCamera(this.pointerToNdc(event), this.camera);
     const surface = this.raycaster.intersectObject(this.moon, false)[0];
     if (surface) {
-      const { latitude, longitude } = unitVectorToLunar(surface.point.x, surface.point.y, surface.point.z);
+      const localPoint = this.moon.worldToLocal(surface.point.clone());
+      const { latitude, longitude } = unitVectorToLunar(localPoint.x, localPoint.y, localPoint.z);
       this.callbacks.onPickPoint(latitude, longitude);
     }
   };

@@ -10,31 +10,45 @@ export interface MissionFormState {
   maxRoughnessM: string;
   minLandingDiameterM: string;
   avoidCraters: boolean;
-  minFlatAreaM2: string;
   sunlight: number;
   resourceProximity: number;
   vehicleType: string;
   surfacePreference: string;
   riskTolerance: string;
   topK: string;
+  spacecraftName: string;
+  dryMassKg: string;
+  payloadMassKg: string;
+  propellantMassKg: string;
+  landingFootprintDiameterM: string;
+  spacecraftMaxSlopeDeg: string;
+  spacecraftMaxRoughnessM: string;
+  missionDurationDays: string;
 }
 
 export const DEFAULT_FORM: MissionFormState = {
   targetName: "South Pole selected point",
-  latitude: "-89.5",
+  latitude: "20",
   longitude: "0",
-  searchRadiusKm: "25",
+  searchRadiusKm: "2500",
   maxSlopeDeg: "8",
   maxRoughnessM: "2",
   minLandingDiameterM: "100",
   avoidCraters: true,
-  minFlatAreaM2: "",
   sunlight: 1,
   resourceProximity: 1,
   vehicleType: "lander",
   surfacePreference: "none",
   riskTolerance: "conservative",
   topK: "10",
+  spacecraftName: "Lunar Surveyor",
+  dryMassKg: "1200",
+  payloadMassKg: "250",
+  propellantMassKg: "800",
+  landingFootprintDiameterM: "80",
+  spacecraftMaxSlopeDeg: "8",
+  spacecraftMaxRoughnessM: "2",
+  missionDurationDays: "30",
 };
 
 export const VEHICLE_OPTIONS = [
@@ -94,6 +108,8 @@ export function validateForm(form: MissionFormState): FormErrors {
   const name = form.targetName.trim();
   if (!name) errors.targetName = "Name is required";
   else if (name.length > 200) errors.targetName = "Keep the name under 200 characters";
+  if (!form.spacecraftName.trim()) errors.spacecraftName = "Spacecraft name is required";
+  else if (form.spacecraftName.trim().length > 120) errors.spacecraftName = "Keep the name under 120 characters";
 
   checkRange(errors, "latitude", form.latitude, "Latitude", { min: -90, max: 90 });
   checkRange(errors, "longitude", form.longitude, "Longitude", { min: -180, max: 180 });
@@ -102,14 +118,15 @@ export function validateForm(form: MissionFormState): FormErrors {
   checkRange(errors, "maxRoughnessM", form.maxRoughnessM, "Max roughness", { min: 0, exclusiveMin: true });
   checkRange(errors, "minLandingDiameterM", form.minLandingDiameterM, "Diameter", { min: 0, exclusiveMin: true, max: 100_000 });
   checkRange(errors, "topK", form.topK, "Results", { min: 1, max: 100, integer: true });
-  if (form.minFlatAreaM2.trim() !== "") {
-    checkRange(errors, "minFlatAreaM2", form.minFlatAreaM2, "Flat area", { min: 0, exclusiveMin: true });
-  }
-
+  checkRange(errors, "dryMassKg", form.dryMassKg, "Dry mass", { min: 0, exclusiveMin: true });
+  checkRange(errors, "payloadMassKg", form.payloadMassKg, "Payload mass", { min: 0 });
+  checkRange(errors, "propellantMassKg", form.propellantMassKg, "Propellant mass", { min: 0, exclusiveMin: true });
+  checkRange(errors, "landingFootprintDiameterM", form.landingFootprintDiameterM, "Landing footprint", { min: 0, exclusiveMin: true });
+  checkRange(errors, "spacecraftMaxSlopeDeg", form.spacecraftMaxSlopeDeg, "Spacecraft slope limit", { min: 0, exclusiveMin: true, max: 90 });
+  checkRange(errors, "spacecraftMaxRoughnessM", form.spacecraftMaxRoughnessM, "Spacecraft roughness limit", { min: 0, exclusiveMin: true });
+  checkRange(errors, "missionDurationDays", form.missionDurationDays, "Mission duration", { min: 0, exclusiveMin: true });
   return errors;
 }
-
-export const areaToDiameter = (areaM2: number) => 2 * Math.sqrt(areaM2 / Math.PI);
 
 export interface BuiltMission {
   request: MissionRequest;
@@ -122,10 +139,7 @@ export function buildMission(form: MissionFormState): BuiltMission {
   const longitude = parseNumber(form.longitude);
   const window = buildSearchWindow(latitude, longitude, parseNumber(form.searchRadiusKm));
 
-  let diameter = parseNumber(form.minLandingDiameterM);
-  const flatArea = parseNumber(form.minFlatAreaM2);
-  if (Number.isFinite(flatArea)) diameter = Math.max(diameter, areaToDiameter(flatArea));
-  diameter = Math.round(diameter * 100) / 100;
+  const diameter = Math.round(parseNumber(form.minLandingDiameterM) * 100) / 100;
 
   return {
     window,
@@ -147,6 +161,16 @@ export function buildMission(form: MissionFormState): BuiltMission {
         vehicle_type: form.vehicleType as MissionRequest["profile"]["vehicle_type"],
         surface_preference: form.surfacePreference as MissionRequest["profile"]["surface_preference"],
         risk_tolerance: form.riskTolerance as MissionRequest["profile"]["risk_tolerance"],
+      },
+      spacecraft: {
+        name: form.spacecraftName.trim(),
+        dry_mass_kg: parseNumber(form.dryMassKg),
+        payload_mass_kg: parseNumber(form.payloadMassKg),
+        propellant_mass_kg: parseNumber(form.propellantMassKg),
+        landing_footprint_diameter_m: parseNumber(form.landingFootprintDiameterM),
+        max_landing_slope_degrees: parseNumber(form.spacecraftMaxSlopeDeg),
+        max_surface_roughness_m: parseNumber(form.spacecraftMaxRoughnessM),
+        mission_duration_days: parseNumber(form.missionDurationDays),
       },
       top_k: parseNumber(form.topK),
     },

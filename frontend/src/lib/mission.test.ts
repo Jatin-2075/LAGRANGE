@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_FORM, areaToDiameter, buildMission, parseNumber, parseTarget, validateForm } from "./mission";
+import { DEFAULT_FORM, buildMission, parseNumber, parseTarget, validateForm } from "./mission";
 
 describe("parseNumber", () => {
   it("treats empty and non-numeric input as NaN rather than 0", () => {
@@ -33,10 +33,6 @@ describe("validateForm", () => {
     expect(errors.targetName).toBeDefined();
   });
 
-  it("treats the legacy flat area as optional but validates it when present", () => {
-    expect(validateForm({ ...DEFAULT_FORM, minFlatAreaM2: "" }).minFlatAreaM2).toBeUndefined();
-    expect(validateForm({ ...DEFAULT_FORM, minFlatAreaM2: "-4" }).minFlatAreaM2).toBeDefined();
-  });
 });
 
 describe("buildMission", () => {
@@ -48,16 +44,17 @@ describe("buildMission", () => {
       preferences: { sunlight: 1, resource_proximity: 1 },
       top_k: 10,
     });
-    expect(Object.keys(request).sort()).toEqual(["constraints", "mission_name", "preferences", "profile", "region", "top_k"]);
+    expect(Object.keys(request).sort()).toEqual(["constraints", "mission_name", "preferences", "profile", "region", "spacecraft", "top_k"]);
     expect(request.profile).toEqual({ vehicle_type: "lander", surface_preference: "none", risk_tolerance: "conservative" });
+    expect(request.spacecraft).toMatchObject({
+      name: "Lunar Surveyor",
+      dry_mass_kg: 1200,
+      payload_mass_kg: 250,
+      propellant_mass_kg: 800,
+      landing_footprint_diameter_m: 80,
+    });
   });
 
-  it("raises the diameter to match a legacy flat-area requirement when it is larger", () => {
-    const area = 20_000;
-    const { effectiveDiameterM } = buildMission({ ...DEFAULT_FORM, minFlatAreaM2: String(area) });
-    expect(effectiveDiameterM).toBeCloseTo(areaToDiameter(area), 1);
-    expect(buildMission({ ...DEFAULT_FORM, minFlatAreaM2: "100" }).effectiveDiameterM).toBe(100);
-  });
 });
 
 describe("parseTarget", () => {

@@ -60,3 +60,25 @@ def test_cache_key_changes_with_inputs_but_not_between_identical_requests(layers
     assert analysis_service.cache_key(a, layers, weights) == analysis_service.cache_key(b, layers, weights)
     c = _request(top_k=6)
     assert analysis_service.cache_key(a, layers, weights) != analysis_service.cache_key(c, layers, weights)
+
+
+def test_spacecraft_capabilities_change_the_landing_solution(layers):
+    baseline = analysis_service.run_analysis(_request(), layers)
+    constrained = analysis_service.run_analysis(
+        _request(
+            spacecraft={
+                "name": "Heavy cargo lander",
+                "dry_mass_kg": 2000,
+                "payload_mass_kg": 1000,
+                "propellant_mass_kg": 900,
+                "landing_footprint_diameter_m": 120,
+                "max_landing_slope_degrees": 4,
+                "max_surface_roughness_m": 0.8,
+                "mission_duration_days": 180,
+            }
+        ),
+        layers,
+    )
+    assert constrained.summary.footprint_radius_px != baseline.summary.footprint_radius_px
+    assert constrained.results[0].metrics.spacecraft_fit is not None
+    assert "Heavy cargo lander" in constrained.results[0].explanation[2]

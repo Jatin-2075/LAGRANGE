@@ -44,6 +44,19 @@ class MissionProfile(BaseModel):
     risk_tolerance: Literal["conservative", "balanced", "aggressive"] = "balanced"
 
 
+class SpacecraftConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(default="Unnamed spacecraft", min_length=1, max_length=120)
+    dry_mass_kg: float = Field(default=1000, gt=0)
+    payload_mass_kg: float = Field(default=100, ge=0)
+    propellant_mass_kg: float = Field(default=500, gt=0)
+    landing_footprint_diameter_m: float = Field(default=1, gt=0)
+    max_landing_slope_degrees: float = Field(default=90, gt=0, le=90)
+    max_surface_roughness_m: float = Field(default=1_000_000, gt=0)
+    mission_duration_days: float = Field(default=30, gt=0)
+
+
 class MissionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -52,4 +65,5 @@ class MissionRequest(BaseModel):
     constraints: MissionConstraints
     preferences: MissionPreferences
     profile: MissionProfile = Field(default_factory=MissionProfile)
+    spacecraft: SpacecraftConfig = Field(default_factory=SpacecraftConfig)
     top_k: int = Field(default=10, ge=1, le=100)

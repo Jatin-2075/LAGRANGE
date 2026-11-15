@@ -11,11 +11,10 @@ PAYLOAD = {
 }
 
 
-def test_health_and_demo_endpoints():
+def test_health_endpoints():
     with TestClient(app) as client:
         assert client.get("/health").json() == {"status": "ok"}
         assert client.get("/api/v1/health").json() == {"status": "ok"}
-        assert len(client.get("/api/locations/demo").json()["locations"]) == 3
 
 
 def test_analyze_store_retrieve_and_cache():

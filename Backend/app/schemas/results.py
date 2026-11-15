@@ -24,6 +24,7 @@ class SiteMetrics(BaseModel):
     illumination: float | None = None
     resource_proximity: float | None = None
     valid_pixel_fraction: float | None = None
+    spacecraft_fit: float | None = None
 
 
 class SiteResult(BaseModel):

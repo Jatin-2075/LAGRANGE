@@ -43,8 +43,6 @@ CORS_ORIGINS = tuple(
     for origin in os.getenv("CORS_ORIGINS", ",".join(DEFAULT_CORS_ORIGINS)).split(",")
     if origin.strip()
 )
-ENABLE_DEMO_ENDPOINT = _read_bool("ENABLE_DEMO_ENDPOINT", True)
-
 DEM_PATH = Path(
     os.getenv(
         "DEM_PATH",

@@ -1,13 +1,91 @@
 .app {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
-  gap: var(--gutter);
+  grid-template-columns: minmax(0, 1fr) 440px;
+  grid-template-rows: 54px minmax(0, 1fr);
+  gap: 18px;
   height: 100dvh;
   min-height: 640px;
-  padding: var(--gutter);
+  overflow: hidden;
+  padding: 18px 24px 24px;
   background:
-    radial-gradient(1200px 600px at 20% -10%, rgba(40, 70, 130, 0.12), transparent 60%),
+    radial-gradient(1000px 500px at 8% 0%, rgba(53, 105, 175, 0.2), transparent 64%),
+    radial-gradient(800px 500px at 90% 100%, rgba(34, 85, 110, 0.12), transparent 62%),
     var(--bg);
+}
+
+.app__topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.08em;
+}
+
+.brand__mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+
+.brand strong,
+.brand small {
+  display: block;
+}
+
+.brand strong {
+  font-size: 13px;
+  letter-spacing: 0.18em;
+}
+
+.brand small {
+  margin-top: 2px;
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+
+.app__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--warn);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.app__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.app__status--online {
+  color: var(--accent);
+}
+
+.app__status--offline {
+  color: var(--danger);
+}
+
+.app__status--checking .app__status-dot {
+  box-shadow: 0 0 12px var(--warn);
 }
 
 .app__sidebar {
@@ -15,11 +93,17 @@
 }
 
 @media (max-width: 1000px) {
+  body {
+    overflow: auto;
+  }
+
   .app {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 54px auto auto;
     height: auto;
     min-height: 0;
-    padding: 12px;
+    padding: 14px;
+    overflow: visible;
   }
 
   .app__sidebar {

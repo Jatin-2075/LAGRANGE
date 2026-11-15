@@ -4,9 +4,7 @@ import {
   RISK_OPTIONS,
   SURFACE_OPTIONS,
   VEHICLE_OPTIONS,
-  areaToDiameter,
   buildMission,
-  parseNumber,
   validateForm,
   type FormErrors,
   type MissionFormState,
@@ -27,8 +25,6 @@ export function MissionForm({ value, onChange, onSubmit, loading }: MissionFormP
   const [submitted, setSubmitted] = useState(false);
   const errors: FormErrors = submitted ? validateForm(value) : {};
 
-  const flatArea = parseNumber(value.minFlatAreaM2);
-  const flatAreaDiameter = Number.isFinite(flatArea) && flatArea > 0 ? areaToDiameter(flatArea) : null;
   const preview = Object.keys(validateForm(value)).length === 0 ? buildMission(value) : null;
 
   const handleSubmit = (event: FormEvent) => {
@@ -44,12 +40,34 @@ export function MissionForm({ value, onChange, onSubmit, loading }: MissionFormP
     <form className="mission-form" onSubmit={handleSubmit} noValidate>
       <div className="mission-form__scroll">
         <div className="mission-form__intro">
-          <p className="eyebrow">Mission input</p>
-          <h2 className="mission-form__title">Landing-site search</h2>
+          <p className="eyebrow">Mission designer</p>
+          <h2 className="mission-form__title">Plan your landing</h2>
+          <p className="mission-form__lead">Tell us what you are flying. The planner screens terrain against your spacecraft's landing envelope.</p>
         </div>
 
-        <FormSection title="Target area" description="Click the globe to set the point, or type coordinates.">
-          <TextField label="Target name" value={value.targetName} onChange={(v) => onChange({ targetName: v })} error={errors.targetName} maxLength={200} />
+        <FormSection title="Mission">
+          <TextField label="Mission name" value={value.targetName} onChange={(v) => onChange({ targetName: v })} error={errors.targetName} maxLength={200} />
+          <FieldRow>
+            <SelectField label="Vehicle role" value={value.vehicleType} options={VEHICLE_OPTIONS} onChange={(v) => onChange({ vehicleType: v })} />
+            <SelectField label="Risk posture" value={value.riskTolerance} options={RISK_OPTIONS} onChange={(v) => onChange({ riskTolerance: v })} />
+          </FieldRow>
+          <TextField label="Mission duration" unit="days" kind="number" value={value.missionDurationDays} onChange={(v) => onChange({ missionDurationDays: v })} error={errors.missionDurationDays} />
+        </FormSection>
+
+        <FormSection title="Spacecraft">
+          <TextField label="Spacecraft name" value={value.spacecraftName} onChange={(v) => onChange({ spacecraftName: v })} error={errors.spacecraftName} maxLength={120} />
+          <FieldRow>
+            <TextField label="Dry mass" unit="kg" kind="number" value={value.dryMassKg} onChange={(v) => onChange({ dryMassKg: v })} error={errors.dryMassKg} />
+            <TextField label="Payload" unit="kg" kind="number" value={value.payloadMassKg} onChange={(v) => onChange({ payloadMassKg: v })} error={errors.payloadMassKg} />
+          </FieldRow>
+          <FieldRow>
+            <TextField label="Propellant" unit="kg" kind="number" value={value.propellantMassKg} onChange={(v) => onChange({ propellantMassKg: v })} error={errors.propellantMassKg} />
+            <TextField label="Landing footprint" unit="m" kind="number" value={value.landingFootprintDiameterM} onChange={(v) => onChange({ landingFootprintDiameterM: v })} error={errors.landingFootprintDiameterM} />
+          </FieldRow>
+          <p className="mission-form__helper">Mass and propellant create a landing reserve score. Footprint, slope and roughness become spacecraft-specific gates.</p>
+        </FormSection>
+
+        <FormSection title="Landing zone" description="Click the Moon to set the centre, or enter coordinates.">
           <FieldRow>
             <TextField label="Latitude" unit="deg" kind="number" value={value.latitude} onChange={(v) => onChange({ latitude: v })} error={errors.latitude} />
             <TextField label="Longitude" unit="deg" kind="number" value={value.longitude} onChange={(v) => onChange({ longitude: v })} error={errors.longitude} />
@@ -63,30 +81,23 @@ export function MissionForm({ value, onChange, onSubmit, loading }: MissionFormP
             error={errors.searchRadiusKm}
             hint={
               preview
-                ? `Searches lat ${preview.window.region.latitude_min}° to ${preview.window.region.latitude_max}°, lon ${preview.window.region.longitude_min}° to ${preview.window.region.longitude_max}°`
+                ? `lat ${preview.window.region.latitude_min}° to ${preview.window.region.latitude_max}° · lon ${preview.window.region.longitude_min}° to ${preview.window.region.longitude_max}°`
                 : undefined
             }
           />
         </FormSection>
 
-        <FormSection title="Mandatory constraints" description="These are pass/fail safety gates. Preferences cannot override them.">
+        <FormSection title="Terrain limits" description="The tighter of your mission limit and spacecraft limit is applied to every footprint.">
           <FieldRow>
             <TextField label="Maximum slope" unit="deg" kind="number" value={value.maxSlopeDeg} onChange={(v) => onChange({ maxSlopeDeg: v })} error={errors.maxSlopeDeg} />
             <TextField label="Maximum roughness" unit="m" kind="number" value={value.maxRoughnessM} onChange={(v) => onChange({ maxRoughnessM: v })} error={errors.maxRoughnessM} />
           </FieldRow>
+          <FieldRow>
+            <TextField label="Craft slope limit" unit="deg" kind="number" value={value.spacecraftMaxSlopeDeg} onChange={(v) => onChange({ spacecraftMaxSlopeDeg: v })} error={errors.spacecraftMaxSlopeDeg} />
+            <TextField label="Craft roughness limit" unit="m" kind="number" value={value.spacecraftMaxRoughnessM} onChange={(v) => onChange({ spacecraftMaxRoughnessM: v })} error={errors.spacecraftMaxRoughnessM} />
+          </FieldRow>
           <TextField label="Minimum landing diameter" unit="m" kind="number" value={value.minLandingDiameterM} onChange={(v) => onChange({ minLandingDiameterM: v })} error={errors.minLandingDiameterM} />
           <CheckboxField label="Avoid detected craters and hazards" checked={value.avoidCraters} onChange={(v) => onChange({ avoidCraters: v })} />
-          <TextField
-            label="Minimum flat area"
-            tag="(legacy preference)"
-            unit="m²"
-            kind="number"
-            placeholder="Optional"
-            value={value.minFlatAreaM2}
-            onChange={(v) => onChange({ minFlatAreaM2: v })}
-            error={errors.minFlatAreaM2}
-            hint={flatAreaDiameter ? `Treated as a ${flatAreaDiameter.toFixed(0)} m minimum diameter` : undefined}
-          />
         </FormSection>
 
         <FormSection title="Scoring preferences" description="Preferences change ranking only after all mandatory constraints pass.">
@@ -103,7 +114,7 @@ export function MissionForm({ value, onChange, onSubmit, loading }: MissionFormP
             <SelectField label="Risk tolerance" value={value.riskTolerance} options={RISK_OPTIONS} onChange={(v) => onChange({ riskTolerance: v })} />
             <TextField label="Results to return" kind="number" value={value.topK} onChange={(v) => onChange({ topK: v })} error={errors.topK} />
           </FieldRow>
-          <p className="mission-form__note">Risk tolerance changes ranking emphasis. Vehicle and surface preference are recorded for mission context until matching datasets are available.</p>
+          <p className="mission-form__note">Every recommendation is deterministic: it is derived from the loaded terrain, your hard limits, and your spacecraft capability.</p>
         </div>
       </div>
 

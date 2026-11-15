@@ -41,6 +41,19 @@ export default function App() {
 
   return (
     <main className="app">
+      <header className="app__topbar">
+        <div className="brand">
+          <span className="brand__mark">L</span>
+          <span>
+            <strong>LAGRANGE</strong>
+            <small>Lunar landing intelligence</small>
+          </span>
+        </div>
+        <div className={`app__status app__status--${backendStatus}`} role="status" aria-live="polite">
+          <span className="app__status-dot" aria-hidden="true" />
+          Backend {backendStatus === "online" ? "working" : backendStatus === "offline" ? "offline" : "checking"}
+        </div>
+      </header>
       <ErrorBoundary fallbackTitle="The visualization hit an error">
         <VisualizationPanel
           analysis={analysis}

@@ -79,7 +79,7 @@ export function renderMoonCanvas(width = 2048, seed = 11): HTMLCanvasElement {
       const z = cosLat * Math.sin(lon);
 
       const albedo = fbm(x, y, z, 5, 2.4);
-      let b = 0.4 + (albedo - 0.5) * 0.5;
+      let b = 0.34 + (albedo - 0.5) * 0.78;
 
       const nearSide = Math.exp(-((lon * lon) / 1.0 + ((lat - 0.3) * (lat - 0.3)) / 0.5));
       const plains = smoothstep(0.48, 0.6, fbm(x + 3.1, y + 1.7, z - 2.3, 3, 1.3)) * nearSide;
@@ -102,9 +102,9 @@ export function renderMoonCanvas(width = 2048, seed = 11): HTMLCanvasElement {
     ctx.translate(x, y);
     ctx.scale(stretch, 1);
     const g = ctx.createRadialGradient(0, 0, r * 0.1, 0, 0, r * 1.12);
-    g.addColorStop(0, `rgba(6,8,14,${0.1 * strength})`);
-    g.addColorStop(0.6, `rgba(6,8,14,${0.15 * strength})`);
-    g.addColorStop(0.8, `rgba(226,233,246,${0.15 * strength})`);
+    g.addColorStop(0, `rgba(3,5,9,${0.24 * strength})`);
+    g.addColorStop(0.58, `rgba(3,5,9,${0.28 * strength})`);
+    g.addColorStop(0.8, `rgba(245,248,255,${0.28 * strength})`);
     g.addColorStop(1, "rgba(226,233,246,0)");
     ctx.fillStyle = g;
     ctx.beginPath();

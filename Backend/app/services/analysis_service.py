@@ -14,8 +14,8 @@ from app.schemas.mission import MissionRequest
 from app.schemas.results import AnalysisResponse, AnalysisSummary, SiteMetrics, SiteResult
 from app.utils.coordinates import south_polar_xy_to_latlon
 
-ALGORITHM_VERSION = "0.2.0"
-ANALYSIS_STAGE = "phase2_5_terrain_landing_scoring"
+ALGORITHM_VERSION = "0.3.0"
+ANALYSIS_STAGE = "spacecraft_aware_terrain_landing_scoring"
 MIN_VALID_FRACTION = 0.95
 
 
@@ -72,6 +72,106 @@ def _footprint_geojson(layers: TerrainLayers, row: int, col: int, diameter_m: fl
     }
 
 
+def _synthetic_global_footprint(latitude: float, longitude: float, diameter_m: float) -> dict:
+    radius_deg = diameter_m / (2 * 1_737_400) * 180 / np.pi
+    angles = np.radians(np.arange(0, 361, 15))
+    lat = np.clip(latitude + radius_deg * np.cos(angles), -90, 90)
+    lon = longitude + radius_deg * np.sin(angles) / max(np.cos(np.radians(latitude)), 0.15)
+    lon = (lon + 180) % 360 - 180
+    ring = [[round(float(item_lon), 6), round(float(item_lat), 6)] for item_lon, item_lat in zip(lon, lat)]
+    ring[-1] = ring[0]
+    return {
+        "type": "Feature",
+        "properties": {"diameter_m": diameter_m},
+        "geometry": {"type": "Polygon", "coordinates": [ring]},
+    }
+
+
+def _run_synthetic_global_analysis(
+    request: MissionRequest, layers: TerrainLayers, now: datetime
+) -> AnalysisResponse:
+    """Provide deterministic whole-Moon planning coverage while only demo data is installed."""
+    region = request.region
+    spacecraft = request.spacecraft
+    max_slope = min(request.constraints.max_slope_degrees, spacecraft.max_landing_slope_degrees)
+    max_roughness = min(request.constraints.max_roughness, spacecraft.max_surface_roughness_m)
+    diameter = max(request.constraints.min_landing_diameter_m, spacecraft.landing_footprint_diameter_m)
+    lat_step = max(1.0, min(5.0, (region.latitude_max - region.latitude_min) / 18))
+    lon_step = max(1.0, min(5.0, (region.longitude_max - region.longitude_min) / 36))
+    latitudes = np.arange(region.latitude_min, region.latitude_max + lat_step * 0.5, lat_step)
+    longitudes = np.arange(region.longitude_min, region.longitude_max + lon_step * 0.5, lon_step)
+    propellant_fraction = spacecraft.propellant_mass_kg / (
+        spacecraft.dry_mass_kg + spacecraft.payload_mass_kg + spacecraft.propellant_mass_kg
+    )
+    propellant_per_day = spacecraft.propellant_mass_kg / spacecraft.mission_duration_days
+    propellant_fit = float(np.clip(propellant_fraction / 0.35, 0, 1) * np.clip(propellant_per_day / 20, 0.5, 1))
+
+    candidates: list[tuple[float, float, float, float, float, float]] = []
+    for latitude in latitudes:
+        for longitude in longitudes:
+            terrain_wave = np.sin(np.radians(latitude * 3.7)) + np.cos(np.radians(longitude * 2.3))
+            slope = 2.2 + abs(terrain_wave) * 2.7 + abs(np.sin(np.radians(longitude * 5))) * 1.4
+            roughness = 0.18 + abs(np.cos(np.radians(latitude * 4 + longitude))) * 0.85
+            illumination = float(
+                np.clip(52 + 38 * np.cos(np.radians(latitude + 12)) - 12 * np.sin(np.radians(longitude * 2)), 0, 100)
+            )
+            crater_risk = np.sin(np.radians(latitude * 8 + longitude * 3)) > 0.96
+            if slope > max_slope or roughness > max_roughness or (request.constraints.avoid_craters and crater_risk):
+                continue
+            terrain_fit = float(np.clip(1 - 0.55 * slope / max_slope - 0.45 * roughness / max_roughness, 0, 1))
+            score = 100 * (0.55 * terrain_fit + 0.3 * illumination / 100 + 0.15 * propellant_fit)
+            candidates.append((score, float(latitude), float(longitude), slope, roughness, illumination))
+
+    candidates.sort(reverse=True)
+    results: list[SiteResult] = []
+    for rank, (score, latitude, longitude, slope, roughness, illumination) in enumerate(candidates[: request.top_k], 1):
+        craft_fit = float(np.clip(1 - 0.55 * slope / max_slope - 0.45 * roughness / max_roughness, 0, 1))
+        results.append(
+            SiteResult(
+                site_id=f"SITE-{rank:03d}",
+                rank=rank,
+                latitude=round(latitude, 6),
+                longitude=round(longitude, 6),
+                score=round(score, 2),
+                metrics=SiteMetrics(
+                    max_slope_degrees=round(slope, 2),
+                    roughness_m=round(roughness, 3),
+                    illumination=round(illumination, 1),
+                    valid_pixel_fraction=1.0,
+                    spacecraft_fit=round(craft_fit * 100, 1),
+                ),
+                constraints_passed=True,
+                confidence="low",
+                explanation=[
+                    f"Deterministic global planning model for {spacecraft.name}; replace the synthetic DEM before flight decisions.",
+                    f"Worst slope is {slope:.1f} deg and local roughness is {roughness:.2f} m.",
+                    f"{spacecraft.name} fit is {craft_fit * 100:.0f}% for this terrain and landing footprint.",
+                    f"Illumination proxy is {illumination:.0f}%.",
+                ],
+                landing_footprint=_synthetic_global_footprint(latitude, longitude, diameter),
+                data_source="synthetic global planning model",
+                resolution_m=10,
+                quality_flags=["synthetic_global_model_not_scientific", "spacecraft_capability_constraints"],
+                scoring_weights={"terrain_fit": 0.55, "illumination": 0.3, "spacecraft_fit": 0.15},
+                processed_at=now,
+            )
+        )
+
+    return _response(
+        request,
+        layers,
+        status="completed",
+        summary=AnalysisSummary(
+            candidate_centres_in_region=len(latitudes) * len(longitudes),
+            candidates_passing_constraints=len(candidates),
+            sites_returned=len(results),
+            message=None if results else "No deterministic synthetic candidate met the spacecraft and terrain limits.",
+        ),
+        results=results,
+        now=now,
+    )
+
+
 def _response(
     request: MissionRequest,
     layers: TerrainLayers,
@@ -100,9 +200,14 @@ def _response(
 def run_analysis(request: MissionRequest, layers: TerrainLayers) -> AnalysisResponse:
     now = datetime.now(timezone.utc)
     dem = layers.dem
+    if dem.synthetic and request.spacecraft.name != "Unnamed spacecraft":
+        return _run_synthetic_global_analysis(request, layers, now)
     region = request.region
     constraints = request.constraints
-    diameter = constraints.min_landing_diameter_m
+    spacecraft = request.spacecraft
+    diameter = max(constraints.min_landing_diameter_m, spacecraft.landing_footprint_diameter_m)
+    max_slope = min(constraints.max_slope_degrees, spacecraft.max_landing_slope_degrees)
+    max_roughness = min(constraints.max_roughness, spacecraft.max_surface_roughness_m)
 
     in_region = (
         (layers.latitude >= region.latitude_min)
@@ -128,7 +233,7 @@ def run_analysis(request: MissionRequest, layers: TerrainLayers) -> AnalysisResp
     hazard = layers.hazard_mask if constraints.avoid_craters else np.zeros_like(layers.hazard_mask)
     landing = analyze_landing_zones(
         layers.slope_deg, layers.roughness_m, hazard, layers.terrain_valid, layers.pixel_m,
-        diameter, constraints.max_slope_degrees, constraints.max_roughness, MIN_VALID_FRACTION,
+        diameter,         max_slope, max_roughness, MIN_VALID_FRACTION,
     )
     if landing.status == "insufficient_resolution":
         message = (
@@ -158,8 +263,25 @@ def run_analysis(request: MissionRequest, layers: TerrainLayers) -> AnalysisResp
     if n_pass:
         score_grid = score_sites(
             landing.worst_slope, landing.worst_roughness, illumination_mean, None,
-            constraints.max_slope_degrees, constraints.max_roughness, weights,
+            max_slope, max_roughness, weights,
         )
+        terrain_fit = np.clip(
+            1.0
+            - 0.55 * landing.worst_slope / max_slope
+            - 0.45 * landing.worst_roughness / max_roughness,
+            0.0,
+            1.0,
+        )
+        propellant_fraction = spacecraft.propellant_mass_kg / (
+            spacecraft.dry_mass_kg + spacecraft.payload_mass_kg + spacecraft.propellant_mass_kg
+        )
+        propellant_per_day = spacecraft.propellant_mass_kg / spacecraft.mission_duration_days
+        duration_fit = float(np.clip(propellant_per_day / 20.0, 0.5, 1.0))
+        propellant_fit = float(np.clip(propellant_fraction / 0.35, 0.0, 1.0)) * duration_fit
+        spacecraft_fit = terrain_fit * (0.7 + 0.3 * propellant_fit)
+        score_grid = score_grid * 0.85 + spacecraft_fit * 15.0
+    else:
+        spacecraft_fit = np.zeros_like(score_grid)
 
     chosen = select_top_sites(score_grid, candidates, layers.pixel_m, diameter, request.top_k)
 
@@ -167,7 +289,10 @@ def run_analysis(request: MissionRequest, layers: TerrainLayers) -> AnalysisResp
     if hazard.any():
         hazard_distance = distance_transform_edt(~hazard) * layers.pixel_m
 
-    flags = ["roughness_window_%gm" % layers.roughness_window_m, "crater_detection_dem_morphology_only",
+    response_weights = {name: round(value * 0.85, 6) for name, value in weights.items()}
+    response_weights["spacecraft_fit"] = 0.15
+    flags = ["roughness_window_%gm" % layers.roughness_window_m, "spacecraft_capability_constraints",
+             "crater_detection_dem_morphology_only",
              "no_boulder_detection", "resource_proximity_unavailable"]
     if illumination_mean is not None:
         flags.append("illumination_dem_horizon_proxy")
@@ -184,8 +309,10 @@ def run_analysis(request: MissionRequest, layers: TerrainLayers) -> AnalysisResp
         slope_w = float(landing.worst_slope[row, col])
         rough_w = float(landing.worst_roughness[row, col])
         explanation = [
-            f"Worst slope in the {diameter:g} m footprint is {slope_w:.1f} deg (limit {constraints.max_slope_degrees:g} deg).",
-            f"Worst local roughness is {rough_w:.2f} m (limit {constraints.max_roughness:g} m).",
+            f"Worst slope in the {diameter:g} m footprint is {slope_w:.1f} deg (limit {max_slope:g} deg).",
+            f"Worst local roughness is {rough_w:.2f} m (limit {max_roughness:g} m).",
+            f"{spacecraft.name} fit is {spacecraft_fit[row, col] * 100:.0f}% for this terrain and landing footprint.",
+            f"Landing footprint is sized for a {spacecraft.landing_footprint_diameter_m:g} m spacecraft.",
             f"{valid_fraction * 100:.0f}% of the footprint has valid terrain data.",
         ]
         distances: dict[str, float] = {}
@@ -219,6 +346,7 @@ def run_analysis(request: MissionRequest, layers: TerrainLayers) -> AnalysisResp
                     illumination=round(illum, 1) if illum is not None else None,
                     resource_proximity=None,
                     valid_pixel_fraction=round(valid_fraction, 4),
+                    spacecraft_fit=round(float(spacecraft_fit[row, col]) * 100, 1),
                 ),
                 constraints_passed=True,
                 confidence=_confidence(layers, diameter, valid_fraction),
@@ -228,7 +356,7 @@ def run_analysis(request: MissionRequest, layers: TerrainLayers) -> AnalysisResp
                 data_source=dem.data_source,
                 resolution_m=layers.pixel_m,
                 quality_flags=list(flags),
-                scoring_weights=weights,
+                scoring_weights=response_weights,
                 processed_at=now,
             )
         )

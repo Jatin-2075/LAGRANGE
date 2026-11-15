@@ -33,12 +33,24 @@ export interface MissionProfile {
   risk_tolerance: "conservative" | "balanced" | "aggressive";
 }
 
+export interface SpacecraftConfig {
+  name: string;
+  dry_mass_kg: number;
+  payload_mass_kg: number;
+  propellant_mass_kg: number;
+  landing_footprint_diameter_m: number;
+  max_landing_slope_degrees: number;
+  max_surface_roughness_m: number;
+  mission_duration_days: number;
+}
+
 export interface MissionRequest {
   mission_name: string;
   region: RegionBounds;
   constraints: MissionConstraints;
   preferences: MissionPreferences;
   profile: MissionProfile;
+  spacecraft: SpacecraftConfig;
   top_k: number;
 }
 
@@ -49,6 +61,7 @@ export interface SiteMetrics {
   illumination: number | null;
   resource_proximity: number | null;
   valid_pixel_fraction: number | null;
+  spacecraft_fit: number | null;
 }
 
 export interface LandingFootprint {
