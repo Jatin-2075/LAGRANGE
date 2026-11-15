@@ -54,14 +54,6 @@ def test_impossible_constraints_return_no_sites(layers):
     assert response.summary.message
 
 
-def test_cache_key_changes_with_inputs_but_not_between_identical_requests(layers):
-    a, b = _request(), _request()
-    weights = analysis_service.request_weights(a, layers)
-    assert analysis_service.cache_key(a, layers, weights) == analysis_service.cache_key(b, layers, weights)
-    c = _request(top_k=6)
-    assert analysis_service.cache_key(a, layers, weights) != analysis_service.cache_key(c, layers, weights)
-
-
 def test_spacecraft_capabilities_change_the_landing_solution(layers):
     baseline = analysis_service.run_analysis(_request(), layers)
     constrained = analysis_service.run_analysis(

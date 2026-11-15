@@ -96,7 +96,6 @@ export interface AnalysisSummary {
   footprint_radius_px: number | null;
   detected_depressions: number;
   message: string | null;
-  cache_hit: boolean;
 }
 
 export interface AnalysisResponse {

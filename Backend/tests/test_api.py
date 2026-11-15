@@ -17,25 +17,13 @@ def test_health_endpoints():
         assert client.get("/api/v1/health").json() == {"status": "ok"}
 
 
-def test_analyze_store_retrieve_and_cache():
+def test_analyze_returns_results():
     with TestClient(app) as client:
-        first = client.post("/api/v1/sites/analyze", json=PAYLOAD)
-        assert first.status_code == 200
-        body = first.json()
+        response = client.post("/api/v1/sites/analyze", json=PAYLOAD)
+        assert response.status_code == 200
+        body = response.json()
         assert body["status"] == "completed" and body["results"]
-        assert body["summary"]["cache_hit"] is False
-
-        again = client.post("/api/v1/sites/analyze", json=PAYLOAD).json()
-        assert again["analysis_id"] == body["analysis_id"] and again["summary"]["cache_hit"] is True
-
-        analysis_id = body["analysis_id"]
-        assert client.get(f"/api/v1/sites/{analysis_id}").json()["analysis_id"] == analysis_id
-        results = client.get(f"/api/v1/sites/{analysis_id}/results").json()
-        assert results[0]["site_id"] == "SITE-001"
-        site = client.get(f"/api/v1/sites/{analysis_id}/results/SITE-001").json()
-        assert site["rank"] == 1
-        assert client.get(f"/api/v1/sites/{analysis_id}/results/SITE-999").status_code == 404
-        assert client.get("/api/v1/sites/nope").status_code == 404
+        assert body["results"][0]["site_id"] == "SITE-001"
 
 
 def test_validation_rejects_bad_requests():

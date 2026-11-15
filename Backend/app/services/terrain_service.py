@@ -38,11 +38,6 @@ def get_layers() -> TerrainLayers:
     )
 
 
-def clear_caches() -> None:
-    get_dem.cache_clear()
-    get_layers.cache_clear()
-
-
 def sample_point(layers: TerrainLayers, latitude: float, longitude: float) -> dict | None:
     """Terrain values at a coordinate, or None when it lies outside the DEM."""
     dem = layers.dem

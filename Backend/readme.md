@@ -45,15 +45,11 @@ The synthetic DEM covers only about 640 m around the pole, so use a region that 
 
 | Method | Path | Purpose |
 |---|---|---|
-| POST | `/api/v1/sites/analyze` | Run (or fetch from cache) an analysis |
-| GET | `/api/v1/sites/{analysis_id}` | Stored analysis |
-| GET | `/api/v1/sites/{analysis_id}/results` | Ranked sites |
-| GET | `/api/v1/sites/{analysis_id}/results/{site_id}` | One site in detail |
+| POST | `/api/v1/sites/analyze` | Run an analysis and return ranked sites |
 | GET | `/api/v1/terrain/elevation?latitude=&longitude=` | Elevation at a point |
 | GET | `/api/v1/terrain/slope?latitude=&longitude=` | Slope, roughness, hazard flag at a point |
 | GET | `/api/v1/datasets` | Installed and planned datasets |
 | GET | `/health`, `/api/v1/health` | Liveness |
-| GET | `/api/locations/demo` | Original demo data (kept for the current frontend) |
 
 Each site returns coordinates, score, metrics, confidence, plain-language explanation, a GeoJSON landing
 footprint, hazard distance, data source and resolution, quality flags and the scoring weights used.
@@ -74,8 +70,7 @@ footprint, hazard distance, data source and resolution, quality flags and the sc
    Unavailable layers are dropped and the weights renormalised, never scored as zero or as good.
    Weights are illustrative, not validated.
 6. **Rank** with greedy non-maximum suppression so returned footprints never overlap.
-7. **Persist and cache** in SQLite. Cache key = normalised request + dataset version + resolution + algorithm
-   version + scoring weights + roughness window.
+7. **Return the analysis** directly to the client. Results are not persisted between requests.
 
 A score of 94 is not a 94% chance of landing safely.
 
@@ -106,7 +101,7 @@ Rasters above ~4 million pixels skip the illumination proxy (`ILLUMINATION_MAX_P
 
 ## Configuration (env or `app/.env`)
 
-`DATABASE_URL`, `CORS_ORIGINS`, `DEM_PATH`, `DATASET_VERSION`, `DATA_SOURCE`,
+`CORS_ORIGINS`, `DEM_PATH`, `DATASET_VERSION`, `DATA_SOURCE`,
 `ROUGHNESS_WINDOW_M` (50), `HAZARD_BUFFER_M` (10), `CRATER_MIN_DEPTH_M` (2), `CRATER_MIN_DIAMETER_M` (20),
 `SUN_ELEVATION_DEG` (1.5), `ILLUMINATION_MAX_PIXELS` (4000000).
 
@@ -120,7 +115,6 @@ app/
   services/            analysis_service.py  terrain_service.py
   engine/              slope  roughness  craters  illumination  landing_zone  scoring  terrain_layers
                        dem_loader (rasterio)  dem_types  synthetic
-  database/            db.py  repository.py   (SQLite)
   utils/               coordinates.py  raster_utils.py
 scripts/               generate_synthetic_dem  inspect_dem  export_layers
 tests/                 engine, service and API tests

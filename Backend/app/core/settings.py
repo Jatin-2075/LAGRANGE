@@ -22,9 +22,6 @@ def _load_env_file() -> None:
 
 _load_env_file()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./earthpulse.db")
-
-
 def _read_bool(name: str, default: bool) -> bool:
     value = os.getenv(name)
     if value is None:
@@ -33,6 +30,7 @@ def _read_bool(name: str, default: bool) -> bool:
 
 
 DEFAULT_CORS_ORIGINS = (
+    "https://lagrange-alpha.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:4173",

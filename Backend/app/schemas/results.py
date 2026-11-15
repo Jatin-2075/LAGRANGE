@@ -57,7 +57,6 @@ class AnalysisSummary(BaseModel):
     footprint_radius_px: int | None = None
     detected_depressions: int = 0
     message: str | None = None
-    cache_hit: bool = False
 
 
 class AnalysisResponse(BaseModel):

@@ -221,24 +221,11 @@ The dashboard is designed like a VS Code workspace:
 On smaller screens, the layout falls back to a vertical arrangement and hides
 the desktop resize divider.
 
-## 10. Database Configuration
+## 10. Analysis Lifecycle
 
-Database configuration is separated from database access:
-
-- [`Backend/app/core/settings.py`](./Backend/app/core/settings.py) loads
-  `DATABASE_URL` from the process environment or `Backend/app/.env`.
-- [`Backend/app/database/db.py`](./Backend/app/database/db.py) imports the
-  setting and exposes a SQLite connection helper.
-
-Example environment file:
-
-```env
-DATABASE_URL=sqlite:///./earthpulse.db
-```
-
-The current demo endpoint does not read from the database yet. Future location
-analysis services can use the database helper for persisted mission requests,
-terrain data, candidate sites, and analysis results.
+Each mission request is calculated directly from the configured terrain data
+and returned immediately. Results are not persisted; submit the mission again
+to run a new analysis.
 
 ## 11. Planned Real Analysis Workflow
 

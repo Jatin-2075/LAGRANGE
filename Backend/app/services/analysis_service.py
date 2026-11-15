@@ -1,6 +1,4 @@
-"""Orchestrates the landing-site analysis: hard constraints first, then ranking."""
-import hashlib
-import json
+"""Orchestrates terrain filtering and spacecraft-aware landing-site ranking."""
 import uuid
 from datetime import datetime, timezone
 
@@ -17,20 +15,6 @@ from app.utils.coordinates import south_polar_xy_to_latlon
 ALGORITHM_VERSION = "0.3.0"
 ANALYSIS_STAGE = "spacecraft_aware_terrain_landing_scoring"
 MIN_VALID_FRACTION = 0.95
-
-
-def cache_key(request: MissionRequest, layers: TerrainLayers, weights: dict[str, float]) -> str:
-    """Normalised request + dataset + algorithm + weights, so stale results cannot sneak back."""
-    payload = {
-        "request": request.model_dump(mode="json"),
-        "dataset_version": layers.dem.dataset_version,
-        "resolution_m": layers.pixel_m,
-        "algorithm_version": ALGORITHM_VERSION,
-        "weights": weights,
-        "roughness_window_m": layers.roughness_window_m,
-    }
-    text = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(text.encode()).hexdigest()
 
 
 def request_weights(request: MissionRequest, layers: TerrainLayers) -> dict[str, float]:

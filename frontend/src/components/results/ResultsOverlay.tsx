@@ -82,7 +82,6 @@ export function ResultsOverlay({ analysis, loading, error, selectedSiteId, onSel
           <p className="results__meta">
             {analysis.summary.candidates_passing_constraints.toLocaleString()} of{" "}
             {analysis.summary.candidate_centres_in_region.toLocaleString()} candidate cells passed
-            {analysis.summary.cache_hit ? " · cached" : ""}
           </p>
           <Button
             variant="ghost"
