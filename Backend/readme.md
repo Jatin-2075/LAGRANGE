@@ -23,6 +23,21 @@ python -m uvicorn app.main:app --reload --port 8000
 
 Open http://localhost:8000/docs for the interactive API. Run the tests with `python -m pytest`.
 
+## Deploy on Render
+
+The repository root contains [`render.yaml`](../render.yaml), which configures
+the backend with `Backend` as its root directory.
+
+```text
+Build:  pip install -r requirements.txt
+Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Health: /api/v1/health
+```
+
+Set `CORS_ORIGINS` to the deployed frontend origin if it differs from the
+default Vercel URL. For the frontend, set
+`VITE_API_BASE_URL=https://<your-render-service>.onrender.com` before building.
+
 If `pip install rasterio` fails on Windows, upgrade pip first (`python -m pip install -U pip`); wheels exist for current Python versions.
 
 ## Try it
