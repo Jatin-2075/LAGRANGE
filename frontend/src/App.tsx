@@ -4,6 +4,9 @@ import { MissionForm } from "./components/form/MissionForm";
 import { Panel } from "./components/ui/Panel";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 import { VisualizationPanel } from "./components/viewer/VisualizationPanel";
+import { ActivityBar } from "./components/navigation/ActivityBar";
+import { DatasetCatalog } from "./components/datasets/DatasetCatalog";
+import type { WorkspacePage } from "./components/navigation/ActivityBar";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { useBackendHealth } from "./hooks/useBackendHealth";
 import { DEFAULT_FORM, parseTarget, type MissionFormState } from "./lib/mission";
@@ -14,6 +17,7 @@ const round4 = (value: number) => String(Math.round(value * 1e4) / 1e4);
 export default function App() {
   const [form, setForm] = useState<MissionFormState>(DEFAULT_FORM);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<WorkspacePage>("planner");
   const { loading, analysis, error, run } = useAnalysis();
   const backendStatus = useBackendHealth();
 
@@ -54,22 +58,28 @@ export default function App() {
           Backend {backendStatus === "online" ? "working" : backendStatus === "offline" ? "offline" : "checking"}
         </div>
       </header>
-      <ErrorBoundary fallbackTitle="The visualization hit an error">
-        <VisualizationPanel
-          analysis={analysis}
-          loading={loading}
-          error={error}
-          backendStatus={backendStatus}
-          target={target}
-          selectedSiteId={selectedSiteId}
-          onSelectSite={setSelectedSiteId}
-          onPickPoint={handlePickPoint}
-        />
-      </ErrorBoundary>
-
-      <Panel className="app__sidebar" label="Mission parameters">
-        <MissionForm value={form} onChange={patchForm} onSubmit={handleSubmit} loading={loading} />
-      </Panel>
+      {currentPage === "datasets" ? (
+        <DatasetCatalog />
+      ) : (
+        <>
+          <ErrorBoundary fallbackTitle="The visualization hit an error">
+            <VisualizationPanel
+              analysis={analysis}
+              loading={loading}
+              error={error}
+              backendStatus={backendStatus}
+              target={target}
+              selectedSiteId={selectedSiteId}
+              onSelectSite={setSelectedSiteId}
+              onPickPoint={handlePickPoint}
+            />
+          </ErrorBoundary>
+          <Panel className="app__sidebar" label="Mission parameters">
+            <MissionForm value={form} onChange={patchForm} onSubmit={handleSubmit} loading={loading} />
+          </Panel>
+        </>
+      )}
+      <ActivityBar currentPage={currentPage} onPageChange={setCurrentPage} />
     </main>
   );
 }

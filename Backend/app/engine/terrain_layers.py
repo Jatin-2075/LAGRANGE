@@ -1,4 +1,3 @@
-"""Derived terrain layers computed once per DEM (slope, roughness, hazards, illumination, lat/lon)."""
 from dataclasses import dataclass, field
 
 import numpy as np

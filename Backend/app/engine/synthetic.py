@@ -1,7 +1,3 @@
-"""Deterministic synthetic South Pole terrain for development and tests.
-
-This is NOT scientific lunar data. It exists so the whole pipeline can run end to end.
-"""
 from __future__ import annotations
 
 import numpy as np
@@ -49,7 +45,6 @@ def synthetic_south_pole_elevation(
 
 
 def build_synthetic_dem(width: int = 128, height: int = 128, pixel_size_m: float = 10.0) -> DemRaster:
-    """In-memory synthetic DemRaster (no rasterio needed)."""
     nodata = -9999.0
     raw = synthetic_south_pole_elevation(width, height, pixel_size_m, nodata)
     valid = raw != nodata

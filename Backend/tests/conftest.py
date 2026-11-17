@@ -1,4 +1,3 @@
-"""Point tests at an isolated synthetic terrain file."""
 import os
 import tempfile
 from pathlib import Path

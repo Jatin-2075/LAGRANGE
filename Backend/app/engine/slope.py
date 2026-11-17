@@ -2,10 +2,6 @@ import numpy as np
 
 
 def calculate_slope(elevation_m: np.ndarray, pixel_size_m: float | tuple[float, float]) -> np.ndarray:
-    """Slope in degrees. Needs a metric projection and the true pixel size.
-
-    Cells whose neighbours are NaN come out as NaN, never as zero.
-    """
     if isinstance(pixel_size_m, tuple):
         px, py = pixel_size_m
     else:

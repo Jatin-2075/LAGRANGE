@@ -16,6 +16,5 @@ def _layers():
 
 @router.post("/analyze", response_model=AnalysisResponse)
 def analyze_sites(request: MissionRequest) -> AnalysisResponse:
-    """Run the terrain analysis for the submitted mission."""
     layers = _layers()
     return analysis_service.run_analysis(request, layers)

@@ -1,8 +1,3 @@
-"""Phase 1-3 milestone: write elevation, slope, roughness, hazard and landing-zone rasters.
-
-Open the outputs in QGIS to inspect the maths visually.
-    python -m scripts.export_layers --diameter 100 --max-slope 8 --max-roughness 2
-"""
 import argparse
 from pathlib import Path
 
@@ -14,7 +9,7 @@ from app.services import terrain_service
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description="Export derived terrain layers")
     parser.add_argument("--diameter", type=float, default=100.0, help="landing footprint diameter (m)")
     parser.add_argument("--max-slope", type=float, default=8.0, help="maximum slope (degrees)")
     parser.add_argument("--max-roughness", type=float, default=2.0, help="maximum roughness (m)")

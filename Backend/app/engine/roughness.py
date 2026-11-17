@@ -3,7 +3,6 @@ from scipy.ndimage import correlate, distance_transform_edt
 
 
 def fill_invalid(values: np.ndarray, valid: np.ndarray) -> np.ndarray:
-    """Replace invalid cells with the nearest valid value (used only inside filters)."""
     if valid.all():
         return values.astype(np.float64)
     if not valid.any():
@@ -24,12 +23,6 @@ def calculate_roughness(
     window_m: float = 50.0,
     min_valid_fraction: float = 0.8,
 ) -> np.ndarray:
-    """RMS of elevation residuals after removing a least-squares plane in a sliding window.
-
-    A uniformly inclined surface therefore has zero roughness. Exact and vectorised: for a
-    symmetric window the regressors (1, u, v) are orthogonal, so
-    residual variance = Var(z) - Cov(z,u)^2/Var(u) - Cov(z,v)^2/Var(v).
-    """
     window = odd_window(window_m, pixel_m)
     half = window // 2
     offsets = np.arange(-half, half + 1, dtype=np.float64) * pixel_m

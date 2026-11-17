@@ -1,4 +1,3 @@
-"""Orchestrates terrain filtering and spacecraft-aware landing-site ranking."""
 import uuid
 from datetime import datetime, timezone
 
@@ -74,7 +73,6 @@ def _synthetic_global_footprint(latitude: float, longitude: float, diameter_m: f
 def _run_synthetic_global_analysis(
     request: MissionRequest, layers: TerrainLayers, now: datetime
 ) -> AnalysisResponse:
-    """Provide deterministic whole-Moon planning coverage while only demo data is installed."""
     region = request.region
     spacecraft = request.spacecraft
     max_slope = min(request.constraints.max_slope_degrees, spacecraft.max_landing_slope_degrees)

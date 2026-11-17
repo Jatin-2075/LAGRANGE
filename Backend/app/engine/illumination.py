@@ -1,12 +1,3 @@
-"""Illumination proxy from the DEM horizon.
-
-For each azimuth, march outward along the DEM and record the highest horizon angle. A cell is
-"lit" for that azimuth when a low sun (default 1.5 deg, typical at the lunar poles) clears the
-horizon. The result is the percentage of azimuths lit.
-
-Limits: it only sees terrain inside the raster (rays leaving the DEM are treated as open sky, which
-is optimistic near edges), and it is a geometric proxy, not LROC illumination data.
-"""
 import numpy as np
 from scipy.ndimage import map_coordinates
 

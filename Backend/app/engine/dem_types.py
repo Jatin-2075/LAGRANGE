@@ -1,4 +1,3 @@
-"""DEM container that does not depend on rasterio, so the numerical engine stays testable."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -10,8 +9,6 @@ LUNAR_REFERENCE_RADIUS_M = 1_737_400.0
 
 
 class GridTransform(NamedTuple):
-    """Same field names as rasterio's Affine (north-up rasters only)."""
-
     a: float
     b: float
     c: float
@@ -22,11 +19,6 @@ class GridTransform(NamedTuple):
 
 @dataclass(frozen=True, eq=False)
 class DemRaster:
-    """A DEM array plus everything needed to interpret it.
-
-    The raster must be in a south-polar azimuthal-equidistant metric projection.
-    """
-
     elevation_m: np.ndarray
     valid_mask: np.ndarray
     transform: Any
@@ -48,7 +40,6 @@ class DemRaster:
         return self.elevation_m.shape
 
     def pixel_centres_xy(self) -> tuple[np.ndarray, np.ndarray]:
-        """Projected x/y (metres) of every pixel centre, as 2D arrays."""
         rows, cols = np.indices(self.shape)
         x = self.transform.c + (cols + 0.5) * self.transform.a
         y = self.transform.f + (rows + 0.5) * self.transform.e

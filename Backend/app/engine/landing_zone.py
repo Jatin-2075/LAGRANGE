@@ -35,13 +35,6 @@ def analyze_landing_zones(
     max_roughness: float,
     min_valid: float = 0.95,
 ) -> LandingAnalysis:
-    """Evaluate the whole circular footprint around every cell (hard constraints only).
-
-    A footprint passes only if enough of it has valid data, its worst slope and roughness are within
-    limits, and it touches no hazard. Footprints that cross the raster edge count outside cells as
-    invalid. Fewer than 2 pixels of radius is refused: never assume a pad is safe at a resolution
-    that cannot see it.
-    """
     radius = footprint_radius_px(diameter_m, pixel_m)
     if radius < 2:
         return LandingAnalysis(status="insufficient_resolution", radius_px=radius)
@@ -74,7 +67,6 @@ def analyze_landing_zones(
 
 
 def footprint_mean(values: np.ndarray, valid: np.ndarray, footprint: np.ndarray) -> np.ndarray:
-    """Mean of values over the valid cells of each footprint."""
     weights = footprint / footprint.sum()
     total = convolve(np.where(valid, values, 0.0), weights, mode="constant")
     fraction = convolve(valid.astype(np.float64), weights, mode="constant")
@@ -89,7 +81,6 @@ def select_top_sites(
     min_separation_m: float,
     top_k: int,
 ) -> list[tuple[int, int]]:
-    """Greedy non-maximum suppression so returned footprints do not overlap."""
     rows, cols = np.nonzero(candidates)
     if rows.size == 0:
         return []

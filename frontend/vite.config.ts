@@ -4,7 +4,6 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
-  // Where `npm run dev` / `npm run preview` forward /api requests.
   const apiTarget = env.VITE_DEV_API_TARGET || "http://localhost:8000";
   const proxy = { "/api": { target: apiTarget, changeOrigin: true } };
 

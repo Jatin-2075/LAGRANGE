@@ -1,4 +1,3 @@
-"""Print metadata for the configured DEM (or a path passed as the first argument)."""
 import json
 import sys
 

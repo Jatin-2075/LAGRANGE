@@ -1,4 +1,3 @@
-"""Loads the configured DEM once and caches its derived layers."""
 from functools import lru_cache
 from pathlib import Path
 
@@ -39,7 +38,6 @@ def get_layers() -> TerrainLayers:
 
 
 def sample_point(layers: TerrainLayers, latitude: float, longitude: float) -> dict | None:
-    """Terrain values at a coordinate, or None when it lies outside the DEM."""
     dem = layers.dem
     x, y = south_polar_latlon_to_xy(latitude, longitude, dem.radius_m)
     row, col = dem.xy_to_rowcol(float(x), float(y))

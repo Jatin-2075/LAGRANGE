@@ -9,7 +9,6 @@ LONGITUDE_MAX_DEG = 180.0
 
 
 def lunar_to_threejs_unit_sphere(latitude_deg: float, longitude_deg: float) -> tuple[float, float, float]:
-    """Convert planetocentric, east-positive lunar coordinates to Three.js XYZ."""
     _validate_coordinates(latitude_deg, longitude_deg)
     latitude = math.radians(latitude_deg)
     longitude = math.radians(longitude_deg)
@@ -23,7 +22,6 @@ def lunar_to_threejs_unit_sphere(latitude_deg: float, longitude_deg: float) -> t
 def threejs_unit_sphere_to_lunar(
     x: float, y: float, z: float, *, tolerance: float = 1e-9
 ) -> tuple[float, float]:
-    """Convert a Three.js unit-sphere XYZ position to lunar latitude/longitude."""
     radius = math.sqrt(x * x + y * y + z * z)
     if radius == 0:
         raise ValueError("Three.js position cannot be the zero vector")

@@ -1,9 +1,3 @@
-"""DEM-morphology crater/depression detection.
-
-Honest scope: this finds roughly circular depressions deeper than a threshold in the DEM.
-It does not use imagery, cannot see boulders, and cannot resolve features smaller than a few
-pixels. Slope and roughness constraints remain the main safety filters.
-"""
 from dataclasses import dataclass
 
 import numpy as np
@@ -26,7 +20,6 @@ def _disk(radius: int) -> np.ndarray:
 
 
 def _detrend(filled: np.ndarray, valid: np.ndarray) -> np.ndarray:
-    """Remove the best-fit regional plane so tilted terrain is not mistaken for relief."""
     rows, cols = np.indices(filled.shape)
     r, c, z = rows[valid], cols[valid], filled[valid]
     if z.size < 3:
@@ -48,7 +41,6 @@ def detect_depressions(
     min_extent: float = 0.5,
     min_aspect: float = 0.5,
 ) -> tuple[list[Depression], np.ndarray]:
-    """Return accepted depressions and a boolean mask of their full extent."""
     if not valid.any():
         return [], np.zeros(elevation_m.shape, dtype=bool)
 

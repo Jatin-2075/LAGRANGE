@@ -1,4 +1,3 @@
-"""Pure numerical tests (NumPy/SciPy only)."""
 import numpy as np
 
 from app.engine.craters import detect_depressions

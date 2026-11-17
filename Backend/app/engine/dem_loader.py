@@ -18,11 +18,6 @@ SOUTH_POLE_AEQD_PROJ4 = "+proj=aeqd +lat_0=-90 +lon_0=0 +R=1737400 +units=m +no_
 
 
 def _projection_radius(crs: CRS) -> float:
-    """Check the CRS is a south-polar azimuthal equidistant projection; return the sphere radius.
-
-    Only a positively different projection is rejected. If pyproj cannot describe the CRS we
-    assume the file follows the documented convention rather than blocking the load.
-    """
     try:
         from pyproj import CRS as ProjCRS
 
@@ -48,7 +43,6 @@ def load_dem(
     dataset_version: str = "unknown",
     data_source: str | None = None,
 ) -> DemRaster:
-    """Load one-band elevation data, converting NoData cells to NaN."""
     source_path = Path(path)
     if not source_path.is_file():
         raise FileNotFoundError(f"DEM raster does not exist: {source_path}")
@@ -96,7 +90,6 @@ def create_synthetic_south_pole_dem(
     pixel_size_m: float = 10.0,
     nodata: float = -9999.0,
 ) -> Path:
-    """Write the deterministic synthetic lunar DEM used for development."""
     elevation = synthetic_south_pole_elevation(width, height, pixel_size_m, nodata)
 
     destination = Path(path)

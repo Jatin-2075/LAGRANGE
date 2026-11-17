@@ -4,7 +4,6 @@ import rasterio
 
 
 def inspect_raster(path: str) -> dict[str, Any]:
-    """Return scientific and storage metadata without loading raster pixels."""
     with rasterio.open(path) as dataset:
         return {
             "path": str(path),

@@ -18,7 +18,6 @@ def compute_weights(
     resource_available: bool,
     risk_tolerance: str = "balanced",
 ) -> dict[str, float]:
-    """Weights that sum to 1. Unavailable layers are dropped, never scored as zero or as good."""
     try:
         slope_base, roughness_base, soft_total = RISK_WEIGHTS[risk_tolerance]
     except KeyError as error:
@@ -47,7 +46,6 @@ def score_sites(
     max_roughness: float,
     weights: dict[str, float],
 ):
-    """Vectorised 0-100 suitability score. Only call it on cells that passed the hard constraints."""
     score = weights["slope"] * normalize_low_is_good(worst_slope, max_slope)
     score = score + weights["roughness"] * normalize_low_is_good(worst_roughness, max_roughness)
     if weights["illumination"] > 0 and illumination_pct is not None:
